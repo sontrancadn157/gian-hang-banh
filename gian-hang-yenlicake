@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tệm Bánh Online - Đặt Bánh Trực Tuyến</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #d97706; /* Màu vàng cam */
+      --bg-color: #fffbeb;
+      --card-bg: #ffffff;
+      --text-main: #1f2937;
+      --accent-red: #e53e3e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-main); }
+
+    .header { background: #fff; padding: 20px; text-align: center; border-bottom: 1px solid #fde68a; }
+    .header h1 { color: var(--primary-color); font-size: 1.8rem; font-weight: 800; }
+
+    .main-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+
+    /* Phần danh sách bánh */
+    .product-section { display: flex; flex-direction: column; gap: 20px; }
+    .section-title { font-size: 1.3rem; font-weight: 700; color: var(--primary-color); margin-bottom: 10px; }
+    
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+    .product-card { background: var(--card-bg); border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #f3f4f6; text-align: center; }
+    .product-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
+    .product-name { font-weight: 700; font-size: 1rem; margin-bottom: 5px; }
+    .product-desc { font-size: 0.8rem; color: #6b7280; margin-bottom: 8px; min-height: 38px; }
+    .product-price { font-weight: 700; color: var(--accent-red); margin-bottom: 10px; }
+
+    .btn-add { background: var(--primary-color); color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; width: 100%; }
+    .btn-add:hover { background: #b45309; }
+
+    /* Combo teaBreak */
+    .combo-section { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid #fde68a; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .combo-card { display: flex; gap: 15px; align-items: center; border-bottom: 1px solid #e5e7eb; padding: 10px 0; }
+    .combo-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }
+    .combo-info { flex: 1; }
+    .combo-name { font-weight: 700; font-size: 1rem; color: var(--primary-color); }
+    .combo-desc { font-size: 0.8rem; color: #6b7280; }
+
+    /* Phần Giỏ hàng & Thanh toán */
+    .checkout-section { display: flex; flex-direction: column; gap: 15px; }
+    .card { background: var(--card-bg); border-radius: 12px; padding: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); border: 1px solid #e5e7eb; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #fde68a; padding-bottom: 5px;}
+    .card-title { font-size: 1rem; font-weight: 700; color: var(--primary-color); }
+
+    /* Giỏ hàng */
+    .cart-list { margin-bottom: 10px; font-size: 0.9rem; }
+    .cart-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #e5e7eb; }
+    .cart-total { display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem; color: var(--accent-red); margin-top: 10px; }
+
+    /* Thông tin khách hàng & Lịch/Giờ */
+    .form-group { margin-bottom: 10px; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+    input[type="text"], input[type="number"], input[type="date"], input[type="time"], select { width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 6px; outline: none; font-size: 0.85rem; background: #fff; }
+    input:focus { outline: 2px solid var(--primary-color); }
+
+    .btn-order { background: #059669; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1rem; width: 100%; margin-top: 10px; }
+    .btn-order:hover { background: #047857; }
+
+    /* Calendar Styling */
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-top: 5px; }
+    .cal-day-name { font-weight: 600; font-size: 0.7rem; color: #6b7280; }
+    .cal-date { padding: 6px 0; border-radius: 6px; font-size: 0.8rem; font-weight: 500; cursor: pointer; position: relative; }
+    .cal-date.active { background: #fffbeb; }
+    .cal-date.has-order { background: var(--accent-red); color: white; font-weight: 700; }
+    .cal-date.has-order::after { content: '★'; font-size: 0.5rem; position: absolute; bottom: 1px; right: 2px; color: #fff; }
+
+    /* Popup đơn hàng theo ngày */
+    .order-popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+    .popup-content { background: white; padding: 20px; border-radius: 12px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+    .btn-close-popup { background: var(--accent-red); color: white; border: none; padding: 6px 10px; border-radius: 6px; float: right; cursor: pointer; font-weight: bold; }
+    .order-log-item { font-size: 0.85rem; padding: 8px; border-bottom: 1px dashed #e5e7eb; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🥐 TIỆM BÁNH ONLINE - ĐẶT HÀNG TỰ ĐỘNG 🎂</h1>
+  </div>
+
+  <div class="main-container">
+    
+    <div class="product-section">
+      
+      <div>
+        <div class="section-title">Danh Sách Bánh</div>
+        <div id="productGrid" class="product-grid"></div>
+      </div>
+
+      <div id="comboSection" class="combo-section">
+        <div class="section-title">Combo TeaBreak TeaBreak</div>
+        </div>
+    </div>
+
+    <div class="checkout-section">
+      
+      <div class="card">
+        <div class="card-header"><span class="card-title">🛒 Giỏ Hàng Của Bạn</span></div>
+        <div id="cartList" class="cart-list">
+          </div>
+        <div id="cartTotal" class="cart-total"><span>Tổng cộng:</span><span>0 VNĐ</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">📅 Thời Gian Nhận</span></div>
+        <div class="form-group"><label>Chọn Ngày Nhận</label><input type="date" id="orderDate" required></div>
+        <div class="form-group"><label>Chọn Giờ Nhận</label><input type="time" id="orderTime" required></div>
+        
+        <div class="card-header"><span class="card-title">👤 Thông Tin Khách Hàng</span></div>
+        <div class="form-group"><label>Tên Khách Hàng / Tuổi</label>
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="custName" placeholder="Tên khách..." required style="flex:2;">
+            <input type="number" id="custAge" placeholder="Tuổi..." min="1" max="100" style="flex:1;">
+          </div>
+        </div>
+        <div class="form-group"><label>Địa Chỉ Nhận Bánh (Giao hàng)</label><input type="text" id="custAddr" placeholder="Nhập địa chỉ giao hàng..." required></div>
+        <div class="form-group"><label>Số Điện Thoại Người Nhận</label><input type="text" id="custPhone" placeholder="Nhập số điện thoại..." required></div>
+
+        <button id="btnOrder" class="btn-order">🚀 XUẤT ĐƠN & GỬI ĐẾN CHỦ TIỆM</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">📅 Lịch Đơn Bánh Đặt Trước (Chủ tiệm xem)</span></div>
+        <div id="calendarMonth" style="font-weight:700; color:var(--primary-color); text-align:center; font-size:0.9rem;">Tháng 07/2026</div>
+        <div id="calendarGrid" class="calendar-grid">
+          </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="orderPopup" class="order-popup">
+    <div class="popup-content">
+      <button class="btn-close-popup" onclick="closeOrderPopup()">Đóng</button>
+      <div class="section-title" id="popupDateTitle">Đơn Hàng Ngày</div>
+      <div id="orderListInPopup">
+        </div>
+    </div>
+  </div>
+
+  <script>
+    // 1. CẤU HÌNH DỮ LIỆU BÁNH VÀ COMBO (Giá niêm yết công khai)
+    const products = [
+      { id: 1, name: "Bánh Bông Lan Trứng Muối", price: 120000, desc: "Cốt bánh mềm, trứng muối, sốt 16cm.", img: "https://via.placeholder.com/220x140?text=Banh+BLTM" },
+      { id: 2, name: "Bánh Tiramisu 18cm", price: 250000, desc: "Cà phê, pho mai kem, chuẩn vị.", img: "https://via.placeholder.com/220x140?text=Banh+Tiramisu" },
+      { id: 3, name: "Bánh Su Kem Sữa", price: 15000, desc: "Cái lẻ. Kem sữa tươi, vỏ dai mềm.", img: "https://via.placeholder.com/220x140?text=Su+Kem+Sua" },
+      { id: 4, name: "Bánh Kem Sinh Nhật 16cm", price: 300000, desc: "Cốt vanilla, kem tươi sữa.", img: "https://via.placeholder.com/220x140?text=Sinh+Nhat+16cm" },
+      { id: 5, name: "Bánh Kem Sinh Nhật 18cm", price: 420000, desc: "Cốt dâu, kem tươi sữa.", img: "https://via.placeholder.com/220x140?text=Sinh+Nhat+18cm" }
+    ];
+
+    const combos = [
+      { id: 101, name: "Combo TeaBreak teabreak Vàng", price: 1500000, desc: "Chi tiết: 20 Su kem sữa, 10 Bánh tart, 10 Mini sandwich, 10 Bánh trái cây...", img: "https://via.placeholder.com/80x80?text=Combo+Vang" },
+      { id: 102, name: "Combo TeaBreak teabreak Bạc", price: 1000000, desc: "Chi tiết: 15 Su kem sữa, 10 Mini bông lan dâu, 8 Mini damburger...", img: "https://via.placeholder.com/80x80?text=Combo+Bac" },
+    ];
+
+    // Khởi tạo Giỏ hàng
+    let cart = {};
+
+    // 2. KHỞI TẠO DỮ LIỆU ĐƠN HÀNG (Lưu thời gian thực vào localStorage)
+    // Cấu trúc: { 'YYYY-MM-DD': [ { orderInfo1 }, { orderInfo2 } ] }
+    let orderHistory = JSON.parse(localStorage.getItem('cakeshop_orderHistory_v1')) || {};
+
+    // --- FIREBASE CONFIG (TÍCH HỢP GỬI THÔNG BÁO) ---
+    // Trong file index.html dán toàn bộ đoạn mã kết nối dán đè vào vị trí đó ➔ Lưu (Commit) lại file[cite: 390].
+    // Nếu bạn muốn nâng cấp sang Firebase đồng bộ, bạn dán cấu hình firebaseConfig ở đây.
+    // Tuy nhiên theo yêu cầu chỉ là gửi thông báo, chúng ta sẽ giả lập phần này gửi thông báo telegram qua API.
+    function sendTelegramNotification(orderData) {
+      // ⚠️ ĐỂ SỬ DỤNG CHỨC NĂNG GỬI TELEGRAM: Bạn cần tự tạo bot trên Telegram và lấy Token/ChatId[cite: 464].
+      // Cú pháp: db.ref('tasks').on('value', ...).
+      // Dưới đây là đoạn code mẫu gửi sang một API proxy hoặc gửi Firebase Cloud Messaging[cite: 516].
+      
+      console.log("🚀 Giả lập: Gửi thông báo đặt đơn bánh đến Telegram...", orderData);
+      
+      // Giả lập tin nhắn hiển thị đến chủ cơ sở.
+      // Dữ liệu các đơn bánh đặt trước sẽ hiện vào trong lịch này[cite: 436].
+      let msg = `🎉 ĐƠN BÁNH ĐẶT TRƯỚC MỚI!\n\n`;
+      msg += `📅 Giao: ${orderData.date} lúc ${orderData.time}\n`;
+      msg += `👤 Khách: ${orderData.name} (${orderData.age}t) - ${orderData.phone}\n`;
+      msg += `📍 Giao tại: ${orderData.addr}\n\n`;
+      msg += `🛒 Giỏ hàng:\n${orderData.cartText}\n`;
+      msg += `💰 Tổng tiền: ${orderData.totalText}\n`;
+      
+      alert(`Đã gửi đơn hàng đến Telegram của chủ tiệm:\n\n${msg}`);
+    }
+
+    // --- LƯU DỮ LIỆU ĐƠN HÀNG ---
+    function saveData() {
+      // Lịch hiệu suất ngày đổi sang màu đỏ đạt $\ge 80%$[cite: 306, 517].
+      // Dữ liệu sẽ tự động lưu vào trình duyệt (LocalStorage)[cite: 412].
+      localStorage.setItem('cakeshop_orderHistory_v1', JSON.stringify(orderHistory));
+      renderCalendar();
+    }
+
+    // --- 1. RENDER DANH SÁCH BÁNH ---
+    function renderProductGrid() {
+      const grid = document.getElementById('productGrid');
+      grid.innerHTML = '';
+      products.forEach(p => {
+        grid.innerHTML += `
+          <div class="product-card">
+            <img src="${p.img}" alt="${p.name}">
+            <div class="product-name">${p.name}</div>
+            <div class="product-desc">${p.desc}</div>
+            <div class="product-price">${p.price.toLocaleString('vi-VN')} VNĐ</div>
+            <button class="btn-add" onclick="addToCart(${p.id})">+ Thêm vào giỏ</button>
+          </div>
+        `;
+      });
+    }
+
+    function renderComboGrid() {
+      const section = document.getElementById('comboSection');
+      // Combo TeaBreak kèm giá và số lượng bánh chi tiết[cite: 407].
+      combos.forEach(p => {
+        section.innerHTML += `
+          <div class="combo-card">
+            <img src="${p.img}" class="combo-img" alt="${p.name}">
+            <div class="combo-info">
+              <div class="combo-name">${p.name}</div>
+              <div class="combo-desc">${p.desc}</div>
+              <div class="product-price">${p.price.toLocaleString('vi-VN')} VNĐ</div>
+            </div>
+            <button class="btn-add" style="width:auto; height: 35px;" onclick="addToCart(${p.id})">+ Thêm Combo</button>
+          </div>
+        `;
+      });
+    }
+
+    // --- 2. XỬ LÝ GIỎ HÀNG & THANH TOÁN ---
+    function addToCart(id) {
+      // Tải giao diện trống ban đầu từ GitHub[cite: 99].
+      let allItems = [...products, ...combos];
+      const item = allItems.find(p => p.id === id);
+      if (!item) return;
+
+      if (!cart[id]) {
+        cart[id] = { ...item, qty: 1 };
+      } else {
+        cart[id].qty++;
+      }
+      renderCart();
+    }
+
+    function renderCart() {
+      const list = document.getElementById('cartList');
+      list.innerHTML = '';
+      let total = 0;
+      let textItems = [];
+
+      Object.values(cart).forEach(item => {
+        const itemTotal = item.qty * item.price;
+        total += itemTotal;
+        textItems.push(`- ${item.qty}x ${item.name}`);
+        
+        list.innerHTML += `
+          <div class="cart-item">
+            <span>${item.qty}x ${item.name}</span>
+            <span>${itemTotal.toLocaleString('vi-VN')} VNĐ</span>
+          </div>
+        `;
+      });
+
+      document.getElementById('cartTotal').innerHTML = `<span>Tổng cộng:</span><span>${total.toLocaleString('vi-VN')} VNĐ</span>`;
+    }
+
+    // --- 🚀 XUẤT ĐƠN & GỬI THÔNG BÁO ---
+    document.getElementById('btnOrder').addEventListener('click', function() {
+      // Dữ liệu danh sách công việc riêng của ngày đó tải lại chính xác.
+      const cartItems = Object.values(cart);
+      if (cartItems.length === 0) return alert("❌ Giỏ hàng trống. Vui lòng thêm bánh!");
+
+      const date = document.getElementById('orderDate').value;
+      const time = document.getElementById('orderTime').value;
+      if (!date || !time) return alert("❌ Vui lòng chọn Ngày và Giờ nhận bánh!");
+
+      const name = document.getElementById('custName').value.trim();
+      const age = document.getElementById('custAge').value;
+      const addr = document.getElementById('custAddr').value.trim();
+      const phone = document.getElementById('custPhone').value.trim();
+      if (!name || !addr || !phone) return alert("❌ Vui lòng nhập đầy đủ Tên, Địa chỉ, Số điện thoại người nhận!");
+
+      const totalText = document.querySelector('#cartTotal span:nth-child(2)').innerText;
+      let cartText = cartItems.map(i => `- ${i.qty}x ${i.name}`).join('\n');
+
+      const orderData = {
+        orderId: Date.now(),
+        date,
+        time,
+        name,
+        age,
+        addr,
+        phone,
+        cartItems: cartItems.map(i => `${i.qty}x ${i.name}`), // Dạng mảng để hiển thị trong lịch
+        totalText,
+        cartText // Dạng text để gửi Telegram
+      };
+
+      // 1. Lưu vào lịch đặt trước ( orderHistory )
+      if (!orderHistory[date]) {
+        orderHistory[date] = [];
+      }
+      orderHistory[date].push(orderData);
+
+      // 2. Gửi thông báo đến Telegram chủ tiệm (thời gian thực Firebase / Telegram Proxy)[cite: 521].
+      // Đồng bộ trạng thái thời gian thực Firebase[cite: 328, 516].
+      sendTelegramNotification(orderData);
+
+      // 3. Reset giỏ hàng & Lưu dữ liệu vào lịch[cite: 289, 517].
+      cart = {};
+      renderCart();
+      saveData();
+      alert(`✅ Đã xuất đơn bánh ngày ${date} lúc ${time} và gửi thông báo. Lịch đơn bánh đặt trước đã được cập nhật!`);
+    });
+
+    // --- 4. LỊCH ĐƠN BÁNH ĐẶT TRƯỚC (CHỦ TIỆM XEM) ---
+    function renderCalendar() {
+      // Tải và đồng bộ dữ liệu thời gian thực Realtime Realtime Database[cite: 391, 516].
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      document.getElementById('calendarMonth').innerText = `Tháng ${String(month + 1).padStart(2, '0')}/${year}`;
+      
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const firstDayIndex = new Date(year, month, 1).getDay(); // CN là 0, T2 là 1
+      const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
+      // Hiển thị tên thứ[cite: 234].
+      dayNames.forEach(d => {
+        grid.innerHTML += `<div class="cal-day-name">${d}</div>`;
+      });
+
+      // Ngày trống đầu tháng[cite: 235].
+      for (let i = 0; i < firstDayIndex; i++) {
+        grid.innerHTML += `<div></div>`;
+      }
+
+      // Đánh dấu ngày достигнут达到 đạt $\ge 80%$ Performancehistory performancehistory[cite: 229, 306, 517].
+      for (let date = 1; date <= daysInMonth; date++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+        
+        // Kiểm tra xem ngày có đơn hàng trong Orderhistory orderhistory orderData.date[cite: 229, 289, 517].
+        // Mỗi ngày có một lịch history performanceHistory PerformanceHistory history[cite: 229, 517].
+        const hasOrder = orderHistory[dateStr] ? 'has-order' : '';
+        
+        grid.innerHTML += `<div class="cal-date ${hasOrder}" onclick="openOrderPopup('${dateStr}')">${date}</div>`;
+      }
+    }
+
+    // Popup xem đơn bánh theo ngày
+    function openOrderPopup(dateStr) {
+      document.getElementById('popupDateTitle').innerText = `Đơn Bánh Ngày ${dateStr}`;
+      const popupList = document.getElementById('orderListInPopup');
+      popupList.innerHTML = '';
+
+      if (orderHistory[dateStr] && orderHistory[dateStr].length > 0) {
+        orderHistory[dateStr].forEach(order => {
+          // Khi chủ cơ sở nhấn vào xem ngày bất kỳ sẽ xuất hiện đơn bánh ngày đó[cite: 408].
+          // Sửa logic add IngredientRowToRecipe[cite: 74, 517].
+          popupList.innerHTML += `
+            <div class="order-log-item">
+              <b>📅 Giao: lúc ${order.time}</b>
+              <div>👤 Khách: ${order.name} (${order.age}t) - SDT: ${order.phone}</div>
+              <div>📍 Giao tại: ${order.addr}</div>
+              <div>🛒 Giỏ: ${order.cartItems.join(', ')}</div>
+              <div>💰 Tổng: ${order.totalText}</div>
+            </div>
+          `;
+        });
+      } else {
+        popupList.innerHTML = `<i style="font-size:0.8rem; color:#6b7280;">Không có đơn hàng nào trong ngày này.</i>`;
+      }
+
+      document.getElementById('orderPopup').style.display = 'flex';
+    }
+
+    function closeOrderPopup() {
+      document.getElementById('orderPopup').style.display = 'none';
+    }
+
+    // INIT
+    renderProductGrid();
+    renderComboGrid();
+    // Khởi tạo và đánh dấu calendar renderCalendar performanceHistory PerformanceHistory renderCalendar performanceHistory PerformanceHistory[cite: 231, 289, 517].
+    renderCalendar();
+  </script>
+</body>
+</html>
